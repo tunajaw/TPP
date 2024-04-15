@@ -183,6 +183,7 @@ class TPPRunner(Runner):
         pad_index = self.runner_config.data_config.data_specs.pad_token_id
         metrics_dict = OrderedDict()
         if phase in [RunnerPhase.TRAIN, RunnerPhase.VALIDATE]:
+            print('before batch...')
             for batch in data_loader:
                 batch_loss, batch_num_event, batch_pred, batch_label, batch_mask = \
                     self.model_wrapper.run_batch(batch, phase=phase)
@@ -193,7 +194,11 @@ class TPPRunner(Runner):
                 epoch_label.append(batch_label)
                 epoch_mask.append(batch_mask)
 
+                # print(f"single shape: {batch_pred[1][..., 0].shape}")
+                # print(f"top5 shape: {batch_pred[1].shape}")
+
             avg_loss = total_loss / total_num_event
+            print(f"epoch shape: {len(epoch_pred)}")
 
             metrics_dict.update({'loglike': -avg_loss, 'num_events': total_num_event})
 
@@ -202,12 +207,14 @@ class TPPRunner(Runner):
                 batch_pred, batch_label = self.model_wrapper.run_batch(batch, phase=phase)
                 epoch_pred.append(batch_pred)
                 epoch_label.append(batch_label)
-
+        
         # we need to improve the code here
         # classify batch_output to list
         pred_exists, label_exists = False, False
         if epoch_pred[0][0] is not None:
-            epoch_pred = concat_element(epoch_pred, pad_index)
+            print(epoch_pred[0][0].shape)
+            epoch_pred = concat_element(epoch_pred, pad_index, top=True)
+            print(f"after shape:{epoch_pred[0].shape}")
             pred_exists = True
         if len(epoch_label) > 0 and epoch_label[0][0] is not None:
             epoch_label = concat_element(epoch_label, pad_index)
@@ -215,9 +222,11 @@ class TPPRunner(Runner):
             if len(epoch_mask):
                 epoch_mask = concat_element(epoch_mask, False)[0]  # retrieve the first element of concat array
                 epoch_mask = epoch_mask.astype(bool)
-
+        
         if pred_exists and label_exists:
+            print(self.metric_functions(epoch_pred, epoch_label, seq_mask=epoch_mask))
             metrics_dict.update(self.metric_functions(epoch_pred, epoch_label, seq_mask=epoch_mask))
+            assert 0
 
         if phase == RunnerPhase.PREDICT:
             metrics_dict.update({'pred': epoch_pred, 'label': epoch_label})

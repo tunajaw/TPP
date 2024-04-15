@@ -168,14 +168,16 @@ def array_pad_cols(arr, max_num_cols, pad_index):
     Returns:
         np.array: the padded array.
     """
-    res = np.ones((arr.shape[0], max_num_cols)) * pad_index
+    res = np.ones((arr.shape[0], ) + max_num_cols) * pad_index
 
-    res[:, :arr.shape[1]] = arr
+    slice_tuple = tuple(slice(0, dim_size) for dim_size in arr.shape)
+
+    res[slice_tuple] = arr
 
     return res
 
 
-def concat_element(arrs, pad_index):
+def concat_element(arrs, pad_index, top=False):
     """ Concat element from each batch output  """
 
     n_lens = len(arrs)
@@ -183,12 +185,14 @@ def concat_element(arrs, pad_index):
 
     # found out the max seq len (num cols) in output arrays
     max_len = max([x[0].shape[1] for x in arrs])
+    topN = 5
 
     concated_outputs = []
     for j in range(n_elements):
         a_output = []
+        max_num_cols = (max_len, ) + ((topN, ) if top else ())
         for i in range(n_lens):
-            arrs_ = array_pad_cols(arrs[i][j], max_num_cols=max_len, pad_index=pad_index)
+            arrs_ = array_pad_cols(arrs[i][j], max_num_cols=max_num_cols, pad_index=pad_index)
             a_output.append(arrs_)
 
         concated_outputs.append(np.concatenate(a_output, axis=0))

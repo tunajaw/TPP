@@ -123,7 +123,7 @@ class TorchModelWrapper:
                 self.opt.zero_grad()
                 (loss / num_event).backward()
                 self.opt.step()
-            else:  # by default we do not do evaluation on train set which may take a long time
+            if 1:  # by default we do not do evaluation on train set which may take a long time
                 if self.model.event_sampler:
                     if batch[1] is not None and batch[2] is not None:
                         label_dtime, label_type = batch[1][:, 1:].cpu().numpy(), batch[2][:, 1:].cpu().numpy()
