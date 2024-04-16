@@ -55,17 +55,17 @@ def top5_metric_function(predictions, labels, **kwargs):
     """
 
     seq_mask = kwargs.get('seq_mask')
-    pred = predictions[PredOutputIndex.TimePredIndex][seq_mask]
-    label = labels[PredOutputIndex.TimePredIndex][seq_mask]
+    pred = predictions[PredOutputIndex.TypePredIndex][seq_mask]
+    label = labels[PredOutputIndex.TypePredIndex][seq_mask]
 
     # pred = np.reshape(pred, [-1])
     # label = np.reshape(label, [-1])
-    print(pred.shape, label.shape)
+    # print(pred.shape, label.shape)
     k = 5
     
     # Step 1: Find the indices of the top k scores
     # We use argpartition to perform an efficient partial sort
-    top_k_predictions = np.argpartition(pred, -k, axis=1)[:, -k:]
+    top_k_predictions = pred[:, -k:]
     
     # Step 2: Check if the true labels are in the top k predictions
     # Create an array of labels repeated to match top_k_predictions' shape

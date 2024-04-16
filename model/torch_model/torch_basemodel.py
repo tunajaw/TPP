@@ -189,13 +189,13 @@ class TorchBaseModel(nn.Module):
         # [batch_size, seq_len, event_num]
         intensities_at_times = intensities_at_times.squeeze(dim=-2)
 
-        types_pred = torch.argmax(intensities_at_times, dim=-1)
-        print(f"top1: {types_pred.shape}")
+        # types_pred = torch.argmax(intensities_at_times, dim=-1)
+        # print(f"top1: {types_pred.shape}")
         # here, only output 1st event time -> final dim is only 1
         dtimes_pred = torch.unsqueeze(dtimes_pred, -1)
-        print(f"top1t: {dtimes_pred.shape}")
-        types_pred, _ = torch.topk(intensities_at_times, k=5, dim=-1)
-        print(f"top5: {types_pred.shape}")
+        # print(f"top1t: {dtimes_pred.shape}")
+        _, types_pred = torch.topk(intensities_at_times, k=5, dim=-1)
+        # print(f"top5: {types_pred.shape}")
 
 
         return dtimes_pred, types_pred
